@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build:lib": "cross-env NODE_ENV=production babel src --out-dir lib --source-maps inline --extensions '.ts,.tsx,.js' --ignore '**/__tests__/**' --ignore '**/*.d.ts'",
-    "build:types": "tsc --emitDeclarationOnly -p ./src",
+    "build:types": "ttsc --emitDeclarationOnly -p ./src",
     "build:bundle": "rollup -c",
     "build:clean": "rimraf lib",
     "build": "npm run build:lib && npm run build:types && cpy ./src/resource/normal.d.ts ./lib/resource",
@@ -113,6 +113,8 @@
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-terser": "^5.0.0",
     "ts-jest": "^24.0.2",
+    "ts-transformer-imports": "^0.4.3",
+    "ttypescript": "^1.5.6",
     "typescript": "^3.4.5"
   },
   "dependencies": {
