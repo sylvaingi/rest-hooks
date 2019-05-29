@@ -173,16 +173,16 @@ describe('createEnhancedReducerHook', () => {
     });
     [state, dispatch] = result.current;
     expect(callBefore.mock.calls.length).toBe(1);
-    //expect(callAfter.mock.calls.length).toBe(1);
+    expect(callAfter.mock.calls.length).toBe(1);
     expect(callBefore.mock.calls[0][0]).toEqual({ counter: 0 });
-    //expect(callAfter.mock.calls[0][0]).toEqual({ counter: 1 });
-    //expect(callAfter.mock.calls[0][0]).toEqual(state);
+    expect(callAfter.mock.calls[0][0]).toEqual({ counter: 1 });
+    expect(callAfter.mock.calls[0][0]).toEqual(state);
     action = { type: 'dispatch', payload: 5 };
     act(() => {
       dispatch(action);
     });
     expect(callBefore.mock.calls[1][0]).toEqual({ counter: 1 });
-    //expect(callAfter.mock.calls[1][0]).toEqual({ counter: 2 });
+    expect(callAfter.mock.calls[1][0]).toEqual({ counter: 2 });
   });
 
   it('warns when dispatching during middleware setup', () => {

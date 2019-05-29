@@ -1,4 +1,4 @@
-import { useReducer, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import compose from 'lodash/fp/compose';
 import { Middleware } from '../../types';
 
@@ -11,27 +11,37 @@ export default function createEnhancedReducerHook(
     reducer: R,
     startingState: React.ReducerState<R>,
   ): [React.ReducerState<R>, React.Dispatch<React.ReducerAction<R>>] => {
-    const [state, realDispatch] = useReducer(reducer, startingState);
-    const store = useRef(state);
-    store.current = state;
+    const state = useRef(startingState);
+    const [_, forceUpdate] = useState();
 
     let outerDispatch = useMemo(() => {
-      let dispatch: React.Dispatch<React.ReducerAction<R>> = () => {
+      let middlewareDispatch: React.Dispatch<React.ReducerAction<R>> = () => {
         throw new Error(
           `Dispatching while constructing your middleware is not allowed. ` +
             `Other middleware would not be applied to this dispatch.`,
         );
       };
+
+      const dispatch = (action: React.ReducerAction<R>) => {
+        // emulate useReducer but in a synchronous way, enabling
+        // middlewares to access the latest state
+        state.current = reducer(state.current, action)
+        forceUpdate(state.current)
+        return action;
+      }
+
       // closure here around dispatch allows us to change it after middleware is constructed
       const middlewareAPI = {
-        getState: () => store.current,
-        dispatch: (action: React.ReducerAction<R>) => dispatch(action),
+        getState: () => state.current,
+        dispatch: (action: React.ReducerAction<R>) => middlewareDispatch(action),
       };
       const chain = middlewares.map(middleware => middleware(middlewareAPI));
-      dispatch = compose(chain)(realDispatch);
-      return dispatch;
-    }, [realDispatch, store]);
-    return [state, outerDispatch];
+      middlewareDispatch = compose(chain)(dispatch);
+
+      return middlewareDispatch;
+    }, []);
+
+    return [state.current, outerDispatch];
   };
   return useEnhancedReducer;
 }
